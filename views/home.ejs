@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Demo: Multi-Select Dropdown</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <style>
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-select {
+            width: 350px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            position: relative;
+        }
+
+        .dropdown-options {
+            position: absolute;
+            z-index: 1;
+            width: 99.5%;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            display: none;
+        }
+
+        .dropdown-option {
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            margin-top: 10px;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .dropdown-option:hover {
+            background-color: #d0c7c7;
+        }
+
+        .selected-option {
+            background-color: #8c8383;
+        }
+
+        .dropdown-option .checkbox {
+            position: absolute;
+            top: 50%;
+            left: 5px;
+            transform: translateY(-50%);
+        }
+
+        .dropdown-select::after {
+            content: "";
+            position: absolute;
+            top: 40%;
+            right: 10px;
+            transform: translateY(-50%);
+            border: solid #333;
+            border-width: 0 2px 2px 0;
+            display: inline-block;
+            padding: 4px;
+            pointer-events: none;
+            transform: rotate(45deg);
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            var dropdown = $('.dropdown');
+            var dropdownSelect = $('.dropdown-select');
+            var dropdownOptions = $('.dropdown-options');
+            var loadedOptions = 10000;
+            var totalOptions = 50000;
+
+            // Load initial options
+            loadOptions(0, loadedOptions);
+
+            // Show options dropdown when clicked
+            dropdown.click(function (e) {
+                e.stopPropagation();
+                dropdownOptions.toggle();
+            });
+
+            // Close options dropdown when clicking outside
+            $(document).click(function () {
+                dropdownOptions.hide();
+            });
+
+            // Prevent options dropdown from closing when clicking inside
+            dropdownOptions.click(function (e) {
+                e.stopPropagation();
+            });
+
+            // Load more options when options dropdown is scrolled
+            dropdownOptions.scroll(function () {
+                var scrollTop = dropdownOptions.scrollTop();
+                var scrollHeight = dropdownOptions[0].scrollHeight;
+                var elementHeight = dropdownOptions.height();
+
+                if (scrollTop + elementHeight >= scrollHeight && loadedOptions < totalOptions) {
+                    // Calculate the next range of options to load
+                    var nextOptions = Math.min(loadedOptions + 10000, totalOptions);
+                    loadOptions(loadedOptions, nextOptions);
+                    loadedOptions = nextOptions;
+                }
+            });
+
+            // Function to load options
+            function loadOptions(start, end) {
+                for (var i = start; i < end; i++) {
+                    var option = $('<div class="dropdown-option" data-value="' + (i + 1) + '"><input type="checkbox" class="checkbox">' + 'Option ' + (i + 1) + '</div>');
+                    dropdownOptions.append(option);
+                }
+            }
+
+            // Handle option selection
+            dropdownOptions.on('click', '.dropdown-option', function () {
+                var checkbox = $(this).find('.checkbox');
+                checkbox.prop('checked', !checkbox.prop('checked'));
+                $(this).toggleClass('selected-option');
+                updateSelectedOptions();
+            });
+
+            // Add the following code to handle checkbox clicks separately
+            dropdownOptions.on('click', '.checkbox', function (e) {
+                e.stopPropagation(); // Prevent the click event from propagating to the parent container
+                var dropdownOption = $(this).closest('.dropdown-option');
+                dropdownOption.toggleClass('selected-option');
+                updateSelectedOptions();
+            });
+
+            // // Select all options
+            // $('.select-all').click(function () {
+            //     var checkboxes = dropdownOptions.find('.checkbox');
+            //     checkboxes.prop('checked', true);
+            //     checkboxes.closest('.dropdown-option').addClass('selected-option');
+            //     updateSelectedOptions();
+            // });
+
+            // // Deselect all options
+            // $('.deselect-all').click(function () {
+            //     var checkboxes = dropdownOptions.find('.checkbox');
+            //     checkboxes.prop('checked', false);
+            //     checkboxes.closest('.dropdown-option').removeClass('selected-option');
+            //     updateSelectedOptions();
+            // });
+
+            // Update selected options text
+            function updateSelectedOptions() {
+                var selectedOptions = [];
+                dropdownOptions.find('.selected-option').each(function () {
+                    selectedOptions.push($(this).data('value'));
+                });
+                dropdownSelect.text(selectedOptions.join(', '));
+            }
+        });
+
+
+    </script>
+</head>
+
+<body>
+    <div class="dropdown" style="margin-left: 45%;">
+        <div class="dropdown-select" style="font-size: 20px;">Select options</div>
+        <div class="dropdown-options" style="max-height: 606px;">
+            <!-- <div class="dropdown-option select-all"><input type="checkbox" class="checkbox">Select All</div> -->
+            <!-- <div class="dropdown-option deselect-all"><input type="checkbox" class="checkbox">Deselect All</div> -->
+            <!-- Options will be dynamically loaded here -->
+        </div>
+    </div>
+</body>
+
+</html>
